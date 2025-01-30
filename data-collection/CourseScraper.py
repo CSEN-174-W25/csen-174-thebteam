@@ -6,6 +6,60 @@ class CourseScraper:
     def __init__(self):
         self.base = 'https://www.scu.edu/bulletin/undergraduate/'
 
+        self.tag_map = {
+                
+                # CAS
+                'Anthropology': 'ANTH',
+                'Art  and  Art  History': 'ARTH',
+                'Biology': 'BIOL',
+                'Chemistry and Biochemistry': 'CHEM',
+                'Child Studies': 'CHST',
+                'Classics': 'CLAS',
+                'Communication': 'COMM',
+                'Economics': 'ECON',
+                'English': 'ENGL',
+                'Environmental  Studies  and  Sciences': 'ENVS',
+                'Ethnic Studies': 'ETHN',
+                'History': 'HIST',
+                'Mathematics and Computer Science': 'MATH/CSCI',
+                'Modern Languages and Literatures': '????',
+                'Music': 'MUSC',
+                'Neuroscience': 'NEUR',
+                'Philosophy': 'PHIL',
+                'Physics': 'PHYS',
+                'Political Science': 'POLI',
+                'Psychology': 'PSYC',
+                'Public  Health  Department': 'PHSC',
+                'Religious Studies': 'TESP',
+                'Sociology': 'SOCI',
+                'Theatre  and  Dance': 'THTR/DANC',
+                'Womens and Gender Studies': 'WGST',
+                'Gender and Sexuality Studies': 'WGST',
+                'Arabic Islamic and Middle Eastern Studies': '????',
+                'Asian Studies': 'ASIA',
+                'Catholic Studies': 'ASCI',
+                'Latin American Studies': '????',
+                'Premodern  Studies': '????',
+
+                # LSB
+                'Management': 'MGMT',
+                'Marketing': 'MKTG',
+                'Information  Systems &  Analytics': 'OMIS',
+                'Accounting': 'ACTG',
+                'Economics': 'ECON',
+                'Finance': 'FNCE',
+
+                # SOE
+                'Applied Mathematics': 'AMTH',
+                'Bioengineering' : 'BIOE',
+                'Civil, Environmental, and Sustainable  Engineering' : 'CENG',
+                'Computer  Science  and  Engineering' : 'CSEN',
+                'Electrical and Computer Engineering' : 'ECEN',
+                'General Engineering' : 'ENGR',
+                'Mechanical  Engineering': 'MECH'
+            }
+        
+    def _get_url_map(self):
         # Send a GET request to fetch the page content
         response = requests.get(self.base)
 
@@ -17,11 +71,9 @@ class CourseScraper:
             exit()
 
         # Create a BeautifulSoup object to parse the HTML content
-        self.soup = BeautifulSoup(page_content, 'html.parser')
+        soup = BeautifulSoup(page_content, 'html.parser')
 
-
-    def _get_url_map(self):
-        sidebar = self.soup.find_all('ul', class_='bltFolder')
+        sidebar = soup.find_all('ul', class_='bltFolder')
 
         college_tag = {
             'CAS': sidebar[3],
@@ -48,8 +100,8 @@ class CourseScraper:
 
         return url_map
 
-    def _get_course_info(self, soupObj: BeautifulSoup, college, department, show=False):
-        content = soupObj.find('body', class_='doc-content')
+    def _get_course_info(self, soup: BeautifulSoup, college, department, show=False):
+        content = soup.find('body', class_='doc-content')
 
         col = []
         dep = []
@@ -104,12 +156,12 @@ class CourseScraper:
             if response.status_code == 200:
                 page_content = response.text
             else:
-                print(f"Failed to retrieve content from {self.base}")
+                print(f"Failed to retrieve content from {url}")
                 exit()
 
             # Create a BeautifulSoup object to parse the HTML content
-            soupObj = BeautifulSoup(page_content, 'html.parser')
-            col, dep, num, cou, des = self._get_course_info(soupObj, college, department)
+            soup = BeautifulSoup(page_content, 'html.parser')
+            col, dep, num, cou, des = self._get_course_info(soup, college, department)
 
             colleges += col
             departments += dep
@@ -123,4 +175,20 @@ class CourseScraper:
             'number': numbers,
             'course': courses,
             'description': descriptions
-        }) 
+        })
+    
+    def get_tag_map(self):
+        return self.tag_map
+
+    def add_prereq_col(course_df: pd.DataFrame):
+        pass 
+
+def main():
+    scraper = CourseScraper() 
+    course_df = scraper.retrieve_course_df()
+    course_df.to_csv('./data/courses.csv', index=False)
+    print('Course successfully retrieved and saved in /data/courses.csv')
+
+if __name__ == "__main__":
+    main()
+ 
