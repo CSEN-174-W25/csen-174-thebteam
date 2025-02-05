@@ -1,3 +1,4 @@
 # pycache
 *.pyc
 __pycache__/
+courses.csv
