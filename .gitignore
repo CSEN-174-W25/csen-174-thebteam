@@ -3,3 +3,4 @@ courses.csv
 /data-collection/data
 /.DS_Store
 /.env
+/.pyc
