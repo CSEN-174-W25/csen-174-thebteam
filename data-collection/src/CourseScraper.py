@@ -179,6 +179,9 @@ class CourseScraper:
     
     def get_tag_map(self):
         return self.tag_map
+    
+    def get_base(self):
+        return self.base
 
     def add_prereq_col(course_df: pd.DataFrame):
         pass 

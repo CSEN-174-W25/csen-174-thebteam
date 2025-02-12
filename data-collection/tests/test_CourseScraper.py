@@ -69,11 +69,14 @@ class TestCourseScraper(unittest.TestCase):
         actual_tag_map = self.scraper.get_tag_map()
         self.assertEqual(actual_tag_map, expected_tag_map)
 
+    def test_get_base(self):
+        actual_base = self.scraper.get_base()
+        self.assertEqual(actual_base, expected_base)
+
     def test_retrieve_course_df(self):
         actual_df = self.scraper.retrieve_course_df()
         self.assertIsInstance(actual_df, pd.DataFrame)
 
-    
 
 if __name__ == '__main__':
     unittest.main()
