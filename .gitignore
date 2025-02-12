@@ -1,3 +1,6 @@
+# pycache
+*.pyc
+__pycache__/
 courses.csv
 /data-collection/.ipynb
 /data-collection/data

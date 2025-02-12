@@ -55,7 +55,8 @@ class CourseScraper:
             'General Engineering': 'ENGR',
             'Mechanical  Engineering': 'MECH',
         }
-
+        
+    def _get_url_map(self):
         # Send a GET request to fetch the page content
         response = requests.get(self.base)
 
@@ -67,10 +68,9 @@ class CourseScraper:
             exit()
 
         # Create a BeautifulSoup object to parse the HTML content
-        self.soup = BeautifulSoup(page_content, 'html.parser')
+        soup = BeautifulSoup(page_content, 'html.parser')
 
-    def _get_url_map(self):
-        sidebar = self.soup.find_all('ul', class_='bltFolder')
+        sidebar = soup.find_all('ul', class_='bltFolder')
 
         college_tag = {
             'CAS': sidebar[3],
@@ -96,8 +96,8 @@ class CourseScraper:
 
         return url_map
 
-    def _get_course_info(self, soupObj: BeautifulSoup, college, department, show=False):
-        content = soupObj.find('body', class_='doc-content')
+    def _get_course_info(self, soup: BeautifulSoup, college, department, show=False):
+        content = soup.find('body', class_='doc-content')
 
         col = []
         dep = []
@@ -256,12 +256,12 @@ class CourseScraper:
             if response.status_code == 200:
                 page_content = response.text
             else:
-                print(f"Failed to retrieve content from {self.base}")
+                print(f"Failed to retrieve content from {url}")
                 exit()
 
             # Create a BeautifulSoup object to parse the HTML content
-            soupObj = BeautifulSoup(page_content, 'html.parser')
-            col, dep, num, cou, des, tag = self._get_course_info(soupObj, college, department)
+            soup = BeautifulSoup(page_content, 'html.parser')
+            col, dep, num, cou, des = self._get_course_info(soup, college, department)
 
             colleges += col
             departments += dep
@@ -275,15 +275,14 @@ class CourseScraper:
             'department': departments,
             'number': numbers,
             'course': courses,
-            'description': descriptions,
-            'tag': tags
+            'description': descriptions
         })
+    
+    def get_tag_map(self):
+        return self.tag_map
 
-        # Remove rows with missing course names and ensure valid course numbers
-        df = df.dropna(subset=['course'])
-        df = df[df['number'].str.match(r'^[0-9]+[A-Za-z]*$', na=False)]
-
-        return df
+    def add_prereq_col(course_df: pd.DataFrame):
+        pass 
 
     def add_pre_reqs(self, df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -301,10 +300,10 @@ class CourseScraper:
         return df
 
 def main():
-    scraper = CourseScraper()
-    df = scraper.retrieve_course_df()
-    df.to_csv('data/courses.csv', index=False)
-    print("Course data has been saved to 'data/courses.csv'")
+    scraper = CourseScraper() 
+    course_df = scraper.retrieve_course_df()
+    course_df.to_csv('./data/courses.csv', index=False)
+    print('Course successfully retrieved and saved in /data/courses.csv')
     try:
         df = pd.read_csv('data/courses.csv')
         scraper = CourseScraper()
@@ -318,3 +317,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+ 
