@@ -58,7 +58,7 @@ class CourseScraper:
 
         # Send a GET request to fetch the page content
         response = requests.get(self.base)
-        
+
         # Check if the request was successful
         if response.status_code == 200:
             page_content = response.text
@@ -85,7 +85,7 @@ class CourseScraper:
             ' Centers Institutes and Special Programs'
         ])
 
-        for college, tag in college_tag.items(): 
+        for college, tag in college_tag.items():
             for anchor in tag.find_all('a'):
                 department = anchor.get_text().strip()
                 if department in skip or not department:
@@ -105,7 +105,7 @@ class CourseScraper:
         cou = []
         des = []
         tags = []
-        
+
         # Initialize category and state
         if department.replace('  ', ' ') == 'Theatre and Dance':
             current_category = "Theatre"
@@ -115,7 +115,7 @@ class CourseScraper:
             is_cs_section = False
         else:
             current_category = department
-            
+
         last_course_num = None
         print(f"\nProcessing {department} with initial category: {current_category}")
 
@@ -129,7 +129,7 @@ class CourseScraper:
 
         current_desc = ""
         last_course_index = -1
-        
+
         for elm in content.children:
             if elm.name == 'h2':  # Detect section headers
                 for category, pattern in religious_studies_categories.items():
@@ -158,10 +158,10 @@ class CourseScraper:
                 if department.replace('  ', ' ') in ['Mathematics and Computer Science', 'Theatre and Dance']:
                     try:
                         base_num = int(re.match(r'^(\d+)', number).group(1))
-                        
+
                         if department.replace('  ', ' ') == 'Theatre and Dance':
                             print(f"Processing course {number} (base_num: {base_num}, last: {last_course_num})")
-                            
+
                             # Check for transition to Dance section
                             if base_num == 4 and not reached_dance and last_course_num and last_course_num > 100:
                                 current_category = "Dance"
@@ -180,10 +180,10 @@ class CourseScraper:
                                 current_category = "Computer Science"
                             else:
                                 current_category = "Mathematics"
-                        
+
                         last_course_num = base_num
                         print(f"Category is now: {current_category}")
-                        
+
                     except Exception as e:
                         print(f"Error processing course {number}: {str(e)}")
 
@@ -193,7 +193,7 @@ class CourseScraper:
                     if match:
                         current_category = match.group(0) + ' Studies'
                         print(f"Detected language: {current_category} for course {number}")
-                
+
                 col.append(college)
                 dep.append(current_category)
                 num.append(number)
@@ -205,6 +205,38 @@ class CourseScraper:
                 last_course_index = len(des) - 1
 
         return col, dep, num, cou, des, tags
+
+    def _get_pre_reqs(self, course_desc: str) -> dict:
+        if not course_desc:
+            return {"prerequisites": ""}
+
+        # Combined pattern for all types of prerequisites
+        prereq_pattern = re.compile(
+            r'\b(pre-?req-?uisite[s]?:|prerequisite[s]?:|prereq[s]?:|co-?req-?uisite[s]?:|coreq[s]?:|successful completion of)',
+            re.IGNORECASE
+        )
+
+        try:
+            all_prereqs = []
+
+            # find all prerequisite matches
+            for match in prereq_pattern.finditer(course_desc):
+                start = match.end()
+                # Look for next section keyword or end of string
+                next_section = re.search(r'\b(description|note[s]?):', course_desc[start:], re.IGNORECASE)
+                end = start + next_section.start() if next_section else len(course_desc)
+                prereq = course_desc[start:end].strip()
+                if prereq:  # Only add non-empty prerequisites
+                    all_prereqs.append(prereq)
+
+            # combine all prerequisites with semicolons
+            combined_prereqs = "; ".join(all_prereqs)
+            return {"prerequisites": re.sub(r'\s+', ' ', combined_prereqs)}
+
+        except Exception as e:
+            print(f"Error processing requirements: {str(e)}")
+            print(f"Course description: {course_desc}")
+            return {"prerequisites": ""}
 
     def retrieve_course_df(self) -> pd.DataFrame:
         url_map = self._get_url_map()
@@ -233,7 +265,7 @@ class CourseScraper:
 
             colleges += col
             departments += dep
-            numbers += num 
+            numbers += num
             courses += cou
             descriptions += des
             tags += tag
@@ -246,11 +278,26 @@ class CourseScraper:
             'description': descriptions,
             'tag': tags
         })
-        
+
         # Remove rows with missing course names and ensure valid course numbers
         df = df.dropna(subset=['course'])
         df = df[df['number'].str.match(r'^[0-9]+[A-Za-z]*$', na=False)]
-        
+
+        return df
+
+    def add_pre_reqs(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Add prerequisites to the course data
+        """
+        pre_reqs = []
+        for i, row in df.iterrows():
+            course_desc = row['description']
+            pre_req = self._get_pre_reqs(course_desc)
+            pre_reqs.append(pre_req)
+
+        # Add to DataFrame
+        df['pre_reqs'] = [req["prerequisites"] for req in pre_reqs]
+
         return df
 
 def main():
@@ -258,6 +305,16 @@ def main():
     df = scraper.retrieve_course_df()
     df.to_csv('data/courses.csv', index=False)
     print("Course data has been saved to 'data/courses.csv'")
+    try:
+        df = pd.read_csv('data/courses.csv')
+        scraper = CourseScraper()
+        df = scraper.add_pre_reqs(df)
+        df.to_csv('data/courses.csv', index=False)
+        print("Updated course data has been saved to 'data/courses.csv'")
+    except FileNotFoundError:
+        print("Error: courses.csv file not found in data directory")
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
 
 if __name__ == "__main__":
     main()
