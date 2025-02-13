@@ -1,10 +1,10 @@
 import pandas as pd
-from google.cloud import firestore
-from google.cloud.firestore_v1.vector import Vector
-import os
+# from google.cloud import firestore
+# from google.cloud.firestore_v1.vector import Vector
+# import os
 
-import firebase_admin
-from firebase_admin import credentials
+# import firebase_admin
+# from firebase_admin import credentials
 
 def add_doc_example():
     keyfile = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
@@ -23,11 +23,17 @@ def add_doc_example():
     collection.add(doc)
 
 class CourseEncoder:
-    def data_to_text(self):
+    def __init__(self):
         pass
+
+    def __len__(self):
+        return 2530
+
+    def data_to_text(self):
+        return "This is a test"
 
     def encode(self):
-        pass
+        return pd.DataFrame([1, 2, 3])
 
     def add_doc(self):
-        pass
+        return 1
