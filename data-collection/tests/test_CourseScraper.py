@@ -78,5 +78,11 @@ class TestCourseScraper(unittest.TestCase):
         actual_df = self.scraper.retrieve_course_df()
         self.assertIsInstance(actual_df, pd.DataFrame)
 
+    def test_add_pre_reqs(self):
+        df = self.scraper.retrieve_course_df() 
+        actual_df = self.scraper.add_pre_reqs(df)
+        self.assertIsInstance(actual_df, pd.DataFrame)
+
+
 if __name__ == '__main__':
     unittest.main()

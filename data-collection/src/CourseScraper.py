@@ -70,8 +70,7 @@ class CourseScraper:
         # Create a BeautifulSoup object to parse the HTML content
         soup = BeautifulSoup(page_content, 'html.parser')
 
-    def _get_url_map(self):
-        sidebar = self.soup.find_all('ul', class_='bltFolder')
+        sidebar = soup.find_all('ul', class_='bltFolder')
 
         college_tag = {
             'CAS': sidebar[3],
@@ -118,7 +117,6 @@ class CourseScraper:
             current_category = department
 
         last_course_num = None
-        print(f"\nProcessing {department} with initial category: {current_category}")
 
         # Process course info...
         language_keywords = re.compile(r'\b(Arabic|Chinese|French|German|Italian|Japanese|Spanish)\b', re.IGNORECASE)
@@ -136,7 +134,6 @@ class CourseScraper:
                 for category, pattern in religious_studies_categories.items():
                     if pattern.search(elm.get_text()):
                         current_category = category
-                        print(f"Switching Religious Studies category to: {current_category}")
                         break
 
             if elm.name == 'p':  # Capture descriptions
@@ -161,13 +158,11 @@ class CourseScraper:
                         base_num = int(re.match(r'^(\d+)', number).group(1))
 
                         if department.replace('  ', ' ') == 'Theatre and Dance':
-                            print(f"Processing course {number} (base_num: {base_num}, last: {last_course_num})")
 
                             # Check for transition to Dance section
                             if base_num == 4 and not reached_dance and last_course_num and last_course_num > 100:
                                 current_category = "Dance"
                                 reached_dance = True
-                                print(f"Switching to Dance at course {number}")
                             elif reached_dance:
                                 current_category = "Dance"
                             else:
@@ -176,14 +171,12 @@ class CourseScraper:
                             if last_course_num and base_num < last_course_num - 50 and not is_cs_section:
                                 current_category = "Computer Science"
                                 is_cs_section = True
-                                print(f"Switching to CS at number {base_num}")
                             elif is_cs_section:
                                 current_category = "Computer Science"
                             else:
                                 current_category = "Mathematics"
 
                         last_course_num = base_num
-                        print(f"Category is now: {current_category}")
 
                     except Exception as e:
                         print(f"Error processing course {number}: {str(e)}")
@@ -193,7 +186,6 @@ class CourseScraper:
                     match = language_keywords.search(course)
                     if match:
                         current_category = match.group(0) + ' Studies'
-                        print(f"Detected language: {current_category} for course {number}")
 
                 col.append(college)
                 dep.append(current_category)
@@ -235,8 +227,6 @@ class CourseScraper:
             return {"prerequisites": re.sub(r'\s+', ' ', combined_prereqs)}
 
         except Exception as e:
-            print(f"Error processing requirements: {str(e)}")
-            print(f"Course description: {course_desc}")
             return {"prerequisites": ""}
 
     def retrieve_course_df(self) -> pd.DataFrame:
@@ -278,12 +268,14 @@ class CourseScraper:
             'course': courses,
             'description': descriptions
         })
+
+        return df
     
     def get_tag_map(self):
         return self.tag_map
-
-    def add_prereq_col(course_df: pd.DataFrame):
-        pass 
+    
+    def get_base(self):
+        return self.base
 
     def add_pre_reqs(self, df: pd.DataFrame) -> pd.DataFrame:
         """

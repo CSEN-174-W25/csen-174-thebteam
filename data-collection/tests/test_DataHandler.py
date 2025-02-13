@@ -36,7 +36,7 @@ class TestDataHandler(unittest.TestCase):
 
     def test_save_data(self):
         """Test if save_data() properly saves the file"""
-        self.handler.save_data() 
+        self.handler.save_data("mock_file.csv") 
 
 if __name__ == "__main__":
     unittest.main()
