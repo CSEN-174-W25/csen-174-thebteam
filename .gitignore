@@ -1,1 +1,7 @@
+# pycache
+*.pyc
+__pycache__/
 courses.csv
+google-cloud-sdk/
+.DS_Store
+bteam-6f36c-firebase-adminsdk-fbsvc-de6d814156.json
