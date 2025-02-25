@@ -1,5 +1,4 @@
 import csv
-import os
 import firebase_admin
 from firebase_admin import credentials, firestore
 import vertexai
@@ -27,41 +26,56 @@ def initialize_vertexai():
     vertexai.init(project=project_id, location=location)
     
     # Load the pre-trained text embedding model.
-    # Here we use Google's "text-embedding-005" model.
     embedding_model = TextEmbeddingModel.from_pretrained("text-embedding-005")
     return embedding_model
 
 def process_csv_and_store(csv_path, db, embedding_model):
     """
     Processes each row in the CSV file, where each row is expected to be structured as:
-    college, department, number, course, description.
+    college, department, number, course, description, tag, [pre_reqs].
+    
+    Every entry must have college, department, number, course, description, and tag.
+    The pre_reqs field is optional.
     
     For every row, we build a text prompt from the available data,
-    generate an embedding using Vertex AI, and store the course details along with the embedding in Firestore.
+    generate an embedding using Vertex AI, and store the course details
+    along with the embedding in Firestore.
     """
     # Set the task type and output dimensionality as used in the sample.
     task = "RETRIEVAL_DOCUMENT"
     dimensionality = 256
+    docs = []
     
     with open(csv_path, newline='', encoding='utf-8') as csvfile:
         reader = csv.reader(csvfile)
         # Skip the header row
         next(reader, None)
         for row in reader:
-            # Extract each field, defaulting to an empty string if missing.
-            college = row[0].strip() if len(row) > 0 else ""
-            department = row[1].strip() if len(row) > 1 else ""
-            number = row[2].strip() if len(row) > 2 else ""
-            course = row[3].strip() if len(row) > 3 else ""
-            description = row[4].strip() if len(row) > 4 else ""
+            # Ensure there are at least six columns (required fields).
+            if len(row) < 6:
+                print(f"Skipping incomplete row (missing required fields): {row}")
+                continue
+
+            # Extract required fields.
+            college     = row[0].strip()
+            department  = row[1].strip()
+            number      = row[2].strip()
+            course      = row[3].strip()
+            description = row[4].strip()
+            tag         = row[5].strip()
+            # Pre_reqs is optional.
+            pre_reqs    = row[6].strip() if len(row) > 6 else ""
             
-            # Build the text prompt for the embedding.
-            text_input = f"{college} {department} {number} {course}. {description}"
+            # Build the text prompt for the embedding using all fields.
+            text_input = (
+                f"{college} {department} {number} {course}. "
+                f"{description}. Tag: {tag}"
+            )
             
             try:
                 # Create a TextEmbeddingInput for the text.
                 inputs = [TextEmbeddingInput(text_input, task)]
-                kwargs = dict(output_dimensionality=dimensionality) if dimensionality else {}
+                kwargs = dict(output_dimensionality=dimensionality)
                 # Call get_embeddings() with the input wrapped in a list.
                 embeddings = embedding_model.get_embeddings(inputs, **kwargs)
                 embedding_vector = embeddings[0].values
@@ -76,22 +90,44 @@ def process_csv_and_store(csv_path, db, embedding_model):
                 "number": number,
                 "course": course,
                 "description": description,
+                "tag": tag,
+                "pre_reqs": pre_reqs,
                 "embedding": embedding_vector,
             }
             
             # Create a composite document ID using college, department, and number.
             # Sanitize the doc_id to remove any forbidden characters such as '/'
-            doc_id = f"{college}_{department}_{number}".replace(" ", "_").replace("/", "_")
+            doc_id = f"{tag}-{number}".replace(" ", "_").replace("/", "_")
+            # check for duplicates
+            if doc_id in docs:
+                # if tag is ECON, append the college
+                if tag == "ECON":
+                    doc_id = f"{tag}-{number}-{college}".replace(" ", "_").replace("/", "_")
+                    docs.append(doc_id)
+                elif tag == "":
+                    doc_id = f"{college}-{number}-{course}".replace(" ", "_").replace("/", "_")
+                    docs.append(doc_id)
+                else:
+                    print(f"Skipping duplicate course: {doc_id}")
+                    continue
+            else:
+                docs.append(doc_id)
             
             # If doc_id is empty (i.e., all fields were missing), let Firestore generate an ID.
             if not doc_id.strip("_"):
-                db.collection("course_embeddings").add(data)
+                db.collection("course_embeddings_clean").add(data)
                 print("Stored embedding with auto-generated document ID.")
             else:
-                db.collection("course_embeddings").document(doc_id).set(data)
+                db.collection("course_embeddings_clean").document(doc_id).set(data)
                 print(f"Stored embedding for course: {doc_id}")
 
 def main():
+    """
+    Data Preprocessing:
+    1. Remove duplicate courses (eg HIST-57)
+    2. Some courses have the same number but different departments (ECON 170 in CAS and LSB)
+    3. Some courses have the same number but are scholar variants BUSN 179 and BUSN 179S
+    """
     # Initialize Firestore from Firebase.
     db = initialize_firebase()
     
