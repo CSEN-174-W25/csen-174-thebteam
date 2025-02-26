@@ -1,0 +1,5 @@
+firebase-functions
+firebase-admin
+vertexai
+numpy
+google-genai
