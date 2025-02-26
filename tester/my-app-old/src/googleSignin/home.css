@@ -1,0 +1,105 @@
+
+/* Discord-like Login Page Styling */
+
+body {
+    background-color: #36393f;
+    color: #ffffff;
+    font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    background-color: #2f3136;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    width: 1500px; /* Increase width */
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    max-width: 90%; /* Keep it responsive */
+    align-items:center;
+}
+
+/* Scrollable Chat Box */
+.chat-box {
+    height: 500px; /* Increase height */
+    max-height: 500px; /* Ensure it doesn’t shrink */
+    overflow-y: auto; /* Enable scrolling */
+    background: #202225;
+    padding: 20px; /* Add padding for better spacing */
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Increase spacing between messages */
+    font-size: 18px; /* Make text larger */
+    line-height: 1.6; /* Improve readability */
+    width: 95%;
+    align-self: center;
+}
+
+
+/* Messages */
+.message {
+    padding: 10px;
+    border-radius: 5px;
+    max-width: 90%;
+    word-wrap: break-word;
+    color: white; /* Ensure text is visible */
+}
+
+.user {
+    background-color: #5865f2;
+    align-self: flex-end;
+}
+
+.bot {
+    background-color: #40444b;
+    align-self: flex-start;
+}
+
+/* Placeholder text */
+.placeholder-text {
+    color: #b9bbbe;
+    text-align: center;
+}
+
+/* Input */
+input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 5px;
+    background: #40444b;
+    color: white;
+}
+
+/* Buttons */
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #5865f2;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: #4752c4;
+}
+
+.clear-btn {
+    background-color: #ff5555;
+}
+
+.clear-btn:hover {
+    background-color: #cc4444;
+}
