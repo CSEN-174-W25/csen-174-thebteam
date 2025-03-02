@@ -1,0 +1,36 @@
+.navbar {
+    position: fixed; /* Keep it at the top */
+    top: 0;
+    left: 0;
+    width: 100%; /* Full width */
+    background-color: #2f3136;
+    padding: 15px 0;
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    border-bottom: 2px solid #ffffff20;
+    z-index: 1000; /* Ensure it stays above other content */
+}
+
+.nav-item {
+    color: #b9bbbe;
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 10px 20px;
+    transition: color 0.3s ease;
+}
+
+.nav-item:hover {
+    color: white;
+}
+
+.nav-item.active {
+    color: white;
+    border-bottom: 2px solid white;
+}
+
+/* Push the content below the navbar */
+body {
+    padding-top: 60px; /* Adjust this to match the navbar height */
+}

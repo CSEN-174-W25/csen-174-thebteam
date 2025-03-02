@@ -20,13 +20,13 @@ def initialize_vertexai():
     """
     # Replace with your Google Cloud project ID and desired location.
     project_id = "bteam-6f36c"
-    location = "us-central1"  # Adjust if needed.
+    location = "us-central1"  # Adjust if needed try us-west1 or us-west2 
     
     # Initialize Vertex AI with your project settings.
     vertexai.init(project=project_id, location=location)
     
     # Load the pre-trained text embedding model.
-    embedding_model = TextEmbeddingModel.from_pretrained("text-embedding-005")
+    embedding_model = TextEmbeddingModel.from_pretrained("text-embedding-004")
     return embedding_model
 
 def process_csv_and_store(csv_path, db, embedding_model):
