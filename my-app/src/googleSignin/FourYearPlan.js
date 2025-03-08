@@ -20,7 +20,7 @@ const FourYearPlan = () => {
     );
 
     useEffect(() => {
-        fetch("/courses_clean.csv")
+        fetch("/courses.csv")
             .then((response) => response.text())
             .then((csvText) => {
                 Papa.parse(csvText, {

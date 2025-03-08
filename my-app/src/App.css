@@ -1,38 +1,78 @@
-.App {
-  text-align: center;
+/* index.css or App.css - Global styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+body {
+  font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  background-color: #36393f;
+  color: #dcddde;
+  line-height: 1.5;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+/* Add font for Discord-like interface */
+@font-face {
+  font-family: 'Whitney';
+  src: url('https://cdn.jsdelivr.net/npm/@typopro/web-whitney@3.7.5/TypoPRO-Whitney-Medium.woff2') format('woff2'),
+       url('https://cdn.jsdelivr.net/npm/@typopro/web-whitney@3.7.5/TypoPRO-Whitney-Medium.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+@font-face {
+  font-family: 'Whitney';
+  src: url('https://cdn.jsdelivr.net/npm/@typopro/web-whitney@3.7.5/TypoPRO-Whitney-Semibold.woff2') format('woff2'),
+       url('https://cdn.jsdelivr.net/npm/@typopro/web-whitney@3.7.5/TypoPRO-Whitney-Semibold.woff') format('woff');
+  font-weight: 600;
+  font-style: normal;
 }
 
-.App-link {
-  color: #61dafb;
+@font-face {
+  font-family: 'Whitney';
+  src: url('https://cdn.jsdelivr.net/npm/@typopro/web-whitney@3.7.5/TypoPRO-Whitney-Book.woff2') format('woff2'),
+       url('https://cdn.jsdelivr.net/npm/@typopro/web-whitney@3.7.5/TypoPRO-Whitney-Book.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Button styles */
+button {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+button:focus {
+  outline: none;
+}
+
+/* Link styles */
+a {
+  color: #00aff4;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* For consistent component containers */
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* For accessible but visually hidden elements */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
