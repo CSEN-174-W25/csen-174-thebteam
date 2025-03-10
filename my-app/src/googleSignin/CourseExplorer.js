@@ -226,10 +226,20 @@ const getDaysFromPattern = (pattern) => {
         }
     }
 
-    // If we haven't returned yet, check individual characters
-    for (const char of daysText.toUpperCase()) {
-        if (dayMap[char] !== undefined) {
-            dayIndices.push(dayMap[char]);
+    // If we haven't returned yet, check for 'TH' and then individual characters
+    let i = 0;
+    while (i < daysText.length) {
+        // Check for 'TH' pattern
+        if (i + 1 < daysText.length && 
+            daysText.substring(i, i + 2).toUpperCase() === 'TH') {
+            dayIndices.push(dayMap['TH']);
+            i += 2;
+        } else {
+            const char = daysText[i].toUpperCase();
+            if (dayMap[char] !== undefined) {
+                dayIndices.push(dayMap[char]);
+            }
+            i++;
         }
     }
 
@@ -237,9 +247,10 @@ const getDaysFromPattern = (pattern) => {
     return dayIndices;
 };
 
+// WeeklySchedule Component
 const WeeklySchedule = ({ selectedSections, onRemoveSection }) => {
     // Time slots from 8AM to 10PM
-    const timeSlots = Array.from({ length: 14 }, (_, i) => i + 8);
+    const timeSlots = Array.from({ length: 15 }, (_, i) => i + 7);
     const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
     // Get classes for a specific day and time slot
@@ -288,12 +299,15 @@ const WeeklySchedule = ({ selectedSections, onRemoveSection }) => {
         const durationHours = endDecimal - startDecimal;
 
         // Calculate height based on duration (each hour = 60px height)
-        const heightInPx = Math.max(durationHours * 60, 60); // Minimum height of 60px
+        // Add a small adjustment to ensure precision
+        const heightInPx = Math.max(Math.round(durationHours * 60), 60);
 
         // Calculate top position based on minutes into the hour
         const startHour = Math.floor(startDecimal);
         const minutesIntoHour = (startDecimal - startHour) * 60;
-        const topOffset = minutesIntoHour;
+        
+        // Round to the nearest pixel to avoid floating point issues
+        const topOffset = Math.round(minutesIntoHour);
 
         return {
             height: `${heightInPx}px`,
@@ -312,12 +326,12 @@ const WeeklySchedule = ({ selectedSections, onRemoveSection }) => {
             "#43b581", // Discord green
             "#faa61a", // Discord yellow
             "#f04747", // Discord red
-            "#b3b3b3", // Light gray
             "#593695", // Discord purple
             "#3498db", // Light blue
             "#2ecc71", // Emerald
             "#e74c3c", // Red
             "#9b59b6", // Purple
+            "#5865f2", // Discord blurple
         ];
 
         // Simple hash function for consistent color
@@ -367,30 +381,40 @@ const WeeklySchedule = ({ selectedSections, onRemoveSection }) => {
                                     className="discord-schedule-cell"
                                     style={{ position: "relative" }}
                                 >
-                                    {classes.map((section) => (
-                                        <div
-                                            key={section["Course Section"]}
-                                            className="discord-schedule-class"
-                                            style={processClassStyle(section)}
-                                        >
-                                            <div className="discord-schedule-class-code">
-                                                {section["Course Section"]}
-                                            </div>
-                                            <div className="discord-schedule-class-location">
-                                                {section["Locations"] || ""}
-                                            </div>
-                                            <button
-                                                className="discord-remove-class-btn"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    onRemoveSection(section);
-                                                }}
-                                                aria-label={`Remove ${section["Course Section"]}`}
+                                    {/* Add hour markers for every 15 minutes to improve precision */}
+                                    <div className="discord-hour-markers">
+                                        <div className="discord-hour-marker quarter" style={{top: "15px"}}></div>
+                                        <div className="discord-hour-marker half" style={{top: "30px"}}></div>
+                                        <div className="discord-hour-marker quarter" style={{top: "45px"}}></div>
+                                    </div>
+                                    
+                                    {classes.map((section) => {
+                                        const style = processClassStyle(section);
+                                        return (
+                                            <div
+                                                key={section["Course Section"]}
+                                                className="discord-schedule-class"
+                                                style={style}
                                             >
-                                                ×
-                                            </button>
-                                        </div>
-                                    ))}
+                                                <div className="discord-schedule-class-code">
+                                                    {section["Course Section"]}
+                                                </div>
+                                                <div className="discord-schedule-class-location">
+                                                    {section["Locations"] || ""}
+                                                </div>
+                                                <button
+                                                    className="discord-remove-class-btn"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        onRemoveSection(section);
+                                                    }}
+                                                    aria-label={`Remove ${section["Course Section"]}`}
+                                                >
+                                                    ×
+                                                </button>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             );
                         })}

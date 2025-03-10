@@ -269,13 +269,17 @@ select.discord-filter-select {
 
 .discord-course-code {
     font-weight: 600;
-    min-width: 90px;
+    min-width: 100px;
     font-size: 14px;
+    padding-right: 10px;
+    white-space: nowrap;
 }
 
 .discord-course-name {
     flex: 1;
     font-size: 14px;
+    padding-left: 10px;
+    border-left: 1px solid #40444b;
 }
 
 .discord-prereq-indicator {
@@ -427,13 +431,14 @@ select.discord-filter-select {
 
 /* Mode Toggle Switch */
 .discord-mode-toggle {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    margin-top: 10px;
+    margin: 10px auto 0;
     padding: 6px 10px;
     border-radius: 20px;
     background-color: #292b2f;
+    width: auto;
 }
 
 .discord-mode-label {
@@ -1021,4 +1026,69 @@ select.discord-filter-select {
 .discord-schedule-name-edit:focus {
     outline: none;
     box-shadow: 0 0 0 2px rgba(114, 137, 218, 0.5);
+}
+
+/* Improve time grid precision */
+.discord-schedule-cell {
+  position: relative;
+  height: 60px; /* Each hour is exactly 60px */
+  box-sizing: border-box;
+  border: 1px solid #3c3f44;
+}
+
+/* Style for hour markers - subtle lines at 15-minute intervals */
+.discord-hour-markers {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none; /* Makes sure markers don't interfere with clicking */
+}
+
+.discord-hour-marker {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+}
+
+.discord-hour-marker.half {
+  background-color: rgba(255, 255, 255, 0.15); /* Make half-hour markers slightly more visible */
+}
+
+/* Make class elements respect their precise times */
+.discord-schedule-class {
+  position: absolute;
+  left: 2px; /* Small margin from cell edge */
+  right: 2px;
+  border-radius: 4px;
+  padding: 4px;
+  overflow: hidden;
+  color: white;
+  font-size: 0.85rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  z-index: 1; /* Ensure classes appear above grid lines */
+  box-sizing: border-box;
+}
+
+/* Add subtle time indicators to help visualize precise timing */
+.discord-schedule-class::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.discord-schedule-class::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: rgba(0, 0, 0, 0.2);
 }
