@@ -8,7 +8,7 @@ import {
 import Home from "./googleSignin/home";
 import SignIn from "./googleSignin/signIn";
 import FourYearPlan from "./googleSignin/FourYearPlan";
-import CourseExplorer from "./googleSignin/CourseExplorer"; // Import the new component
+import CourseExplorer from "./googleSignin/CourseExplorer";
 import Navbar from "./googleSignin/Navbar";
 import ProtectedRoute from "./googleSignin/ProtectedRoute";
 
