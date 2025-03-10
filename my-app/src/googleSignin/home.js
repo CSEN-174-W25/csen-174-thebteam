@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { getFunctions, httpsCallable } from "firebase/functions";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { getFirestore, doc, getDoc, deleteDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import "./home.css";
 
@@ -116,9 +116,25 @@ function Home() {
     }
   };
 
-  // Clear chat (locally)
+  // Clear chat (locally and in Firestore)
   const clearChat = () => {
     setChatHistory([defaultMessage]);
+    // Delete chat history from Firestore
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      console.error("User not authenticated.");
+      return;
+    }
+    const db = getFirestore();
+    const chatDocRef = doc(db, "chat_histories", currentUser.uid);
+    deleteDoc(chatDocRef)
+      .then(() => {
+        console.log("Chat history deleted from Firestore.");
+      })
+      .catch((error) => {
+        console.error("Error deleting chat history:", error);
+      });
   };
 
   return (
