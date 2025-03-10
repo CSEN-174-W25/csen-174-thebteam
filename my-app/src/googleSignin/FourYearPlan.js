@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import Papa from "papaparse";
 import Fuse from "fuse.js";
@@ -47,8 +46,8 @@ const FourYearPlan = () => {
     }, []);
 
     const fuse = new Fuse(courses, {
-        keys: ["tag", "number", "display"],  // 🔹 Remove "course" for better filtering
-        threshold: 0.2,  // 🔹 Lower threshold for **stricter matching**
+        keys: ["tag", "number", "display"],
+        threshold: 0.2,
         includeScore: false,
     });
 
@@ -104,15 +103,15 @@ const FourYearPlan = () => {
     };
 
     const handleSearch = (query, row, col) => {
-        const trimmedQuery = query.trim(); // ✅ Remove unnecessary spaces
-    
+        const trimmedQuery = query.trim();
+
         setSearchQueries(prev => {
             const newQueries = prev.map((r, rowIndex) =>
                 rowIndex === row ? r.map((val, colIndex) => (colIndex === col ? query : val)) : r
             );
             return newQueries;
         });
-    
+
         if (!trimmedQuery) {
             setSearchResults(prev => {
                 const newResults = prev.map((r, rowIndex) =>
@@ -122,14 +121,11 @@ const FourYearPlan = () => {
             });
             return;
         }
-    
-        // 🔹 Run Fuse.js search
+
         let results = fuse.search(trimmedQuery).map(result => result.item);
-    
-        // 🔹 Extract individual words from the query
+
         const queryParts = trimmedQuery.toLowerCase().split(" ");
-    
-        // 🔹 Filter results to match **any part** of the query (tag OR number OR full match)
+
         results = results.filter(course =>
             queryParts.every(part =>
                 course.tag.toLowerCase().includes(part) ||
@@ -137,7 +133,7 @@ const FourYearPlan = () => {
                 course.display.toLowerCase().includes(part)
             )
         );
-    
+
         setSearchResults(prev => {
             const newResults = prev.map((r, rowIndex) =>
                 rowIndex === row ? r.map((val, colIndex) => (colIndex === col ? results : val)) : r
@@ -145,8 +141,6 @@ const FourYearPlan = () => {
             return newResults;
         });
     };
-    
-    
 
     const handleSelectCourse = (selectedCourse, row, col) => {
         setSelectedCourses(prev => {
@@ -167,11 +161,19 @@ const FourYearPlan = () => {
 
     return (
         <div>
+            {/* New Header at the Top */}
+            <header className="page-header">
+                <h1>4-Year Plan</h1>
+            </header>
+    
             {[...Array(NUM_TABLES)].map((_, tableIndex) => (
-                <div className="table-container" key={tableIndex}>
+                <div key={tableIndex} className="table-container">
                     <table className="course-table">
                         <thead>
-                            <tr>
+                            <tr className="year-row">
+                                <th colSpan="3" className="year-header">Year {tableIndex + 1}</th>
+                            </tr>
+                            <tr className="semester-row">
                                 <th>Fall</th>
                                 <th>Winter</th>
                                 <th>Spring</th>
@@ -231,6 +233,8 @@ const FourYearPlan = () => {
             ))}
         </div>
     );
+    
+    
 };
 
 export default FourYearPlan;

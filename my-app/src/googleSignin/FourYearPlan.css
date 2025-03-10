@@ -1,8 +1,17 @@
+/* Match dark mode theme */
+body {
+    background-color: #36393f; /* Dark background */
+    color: white;
+    font-family: 'Arial', sans-serif;
+}
+
+/* Center container */
 .container {
     text-align: center;
     margin-top: 20px;
 }
 
+/* Table container */
 .table-container {
     display: flex;
     justify-content: center;
@@ -12,48 +21,97 @@
     margin-top: 20px;
 }
 
+/* Wider Table Layout */
 .course-table {
     border-collapse: collapse;
-    width: 90%;
-    max-width: 1200px;
-    background-color: white;
-    color: black;
+    width: 90%;  /* Increase width for a more horizontal layout */
+    max-width: 1200px;  /* Allow more space */
+    background-color: #1E1F29; /* Darker table background */
+    color: white;
     font-size: 18px;
     table-layout: fixed; /* Ensures uniform column sizes */
+    border-radius: 10px;
+    overflow: hidden;
 }
 
-.course-table th, .course-table td {
-    border: 1px solid black;
-    padding: 20px;
-    text-align: center;
-    width: 33.33%; /* Ensures equal column widths */
-}
-
+/* Header styling */
 .course-table th {
-    background-color: lightgray;
+    background-color: #7289da; /* Slightly lighter gray for contrast */
     font-weight: bold;
     font-size: 20px;
+    padding: 15px;
+    text-align: center;
 }
 
+/* Cell styling - increase width and height */
+.course-table td {
+    border: 1px solid #4A4D5E;
+    padding: 25px;  /* Increased padding for better spacing */
+    text-align: left;
+    width: 33.33%;
+    position: relative;
+    vertical-align: top;
+    height: 75px;  /* Increased height slightly for more space */
+}
+
+/* Keep spacing between button and text */
+.selected-course {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px; /* Spacing between text and button */
+}
+
+/* Keep smaller + button */
+.add-button, .edit-button {
+    background-color: #4A4D5E;
+    color: white;
+    border: 1px solid white;
+    border-radius: 5px;
+    width: 22px; /* Smaller button */
+    height: 22px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.2s ease-in-out;
+
+    /* Keep button at bottom-left */
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+}
+
+/* Button hover effect */
+.add-button:hover, .edit-button:hover {
+    background-color: #5A5D6E;
+}
+
+/* Search input */
 .search-container {
     position: relative;
     width: 100%;
 }
 
 .search-input {
-    width: calc(100% - 20px); /* Ensures input fits within the table cell */
+    width: calc(100% - 20px);
     padding: 12px;
     border: 1px solid gray;
     border-radius: 5px;
     font-size: 18px;
+    background-color: #2A2D37;
+    color: white;
     box-sizing: border-box;
 }
 
+/* Dropdown list */
 .search-results {
     position: absolute;
     width: calc(100% - 20px);
-    background: white;
-    border: 1px solid gray;
+    background: #1E1F29;
+    border: 1px solid #4A4D5E;
     max-height: 200px;
     overflow-y: auto;
     list-style: none;
@@ -67,11 +125,73 @@
 .search-results li {
     padding: 12px;
     cursor: pointer;
-    border-bottom: 1px solid lightgray;
+    border-bottom: 1px solid #4A4D5E;
     font-size: 16px;
     text-align: left;
+    color: white;
 }
 
 .search-results li:hover {
-    background-color: #f0f0f0;
+    background-color: #3A3D4D;
 }
+
+
+/* Year Label Styling */
+.year-container {
+    text-align: center;
+    margin-bottom: 15px; /* Spacing between year label and table */
+}
+
+.year-label {
+    font-size: 22px;
+    font-weight: bold;
+    color: white;
+    background-color: #7289da; /* Discord-style header */
+    padding: 10px 20px;
+    border-radius: 8px;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.year-header {
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+/* Style for Year Label Row */
+.year-row .year-header {
+    background-color: #7289da; /* Same color as Year Label */
+    color: white;
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+    padding: 15px;
+}
+
+/* Style for Semester Header Row */
+.semester-row th {
+    background-color: #3A3D4D; /* Different color for semesters */
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    padding: 12px;
+}
+
+
+/* Page Header Styling - Smaller & No Subtitle */
+.page-header {
+    background-color: #2A2D37; /* Match background */
+    color: white;
+    text-align: center;
+    padding: 5px 10px; /* Compact */
+    font-size: 14px; /* Smaller font */
+    font-weight: bold;
+    height: 35px; /* Adjusted height */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
