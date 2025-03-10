@@ -917,3 +917,108 @@ select.discord-filter-select {
         width: 100%;
     }
 }
+
+.discord-schedule-tabs {
+    display: flex;
+    flex-wrap: nowrap;  /* Prevent wrapping */
+    gap: 4px;
+    margin-bottom: 10px;
+    width: 100%;  /* Take up full width */
+    overflow-x: auto;  /* Allow horizontal scrolling if needed */
+    justify-content: flex-start;  /* Explicitly left align */
+    align-items: center;  /* Vertically center items */
+}
+
+.discord-schedule-tab {
+    padding: 6px 12px;
+    background: #2f3136;
+    border-radius: 4px 4px 0 0;
+    cursor: pointer;
+    font-size: 14px;
+    border-bottom: 3px solid transparent;
+    flex: 0 0 auto;  /* Don't grow or shrink */
+    min-width: max-content;  /* Size based on content */
+}
+
+.discord-schedule-tab.active {
+    background: #36393f;
+    border-bottom: 3px solid #7289da;
+    font-weight: bold;
+}
+
+.discord-add-schedule-btn {
+    padding: 6px 10px;
+    background: #2f3136;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    margin-left: 4px;
+}
+
+.discord-schedule-actions {
+    display: flex;
+    gap: 8px;
+    margin: 8px 0;
+}
+
+.discord-rename-schedule-btn,
+.discord-delete-schedule-btn {
+    padding: 4px 8px;
+    background: #2f3136;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.discord-delete-schedule-btn {
+    background: #f04747;
+}
+
+.discord-name-edit {
+    display: flex;
+    gap: 4px;
+}
+
+.discord-name-edit input {
+    padding: 4px;
+    background: #2f3136;
+    border: 1px solid #7289da;
+    border-radius: 4px;
+    color: white;
+}
+
+.discord-name-edit button {
+    padding: 4px 8px;
+    background: #7289da;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+}
+
+.discord-schedule-name {
+    cursor: text;
+    display: block;
+    padding: 6px 12px;
+    width: 100%;
+}
+
+.discord-schedule-name-edit {
+    background: #36393f;
+    border: none;
+    padding: 5px;
+    color: white;
+    border-radius: 3px;
+    font-size: 14px;
+    width: 100%;
+    min-width: 80px;
+}
+
+.discord-schedule-name-edit:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(114, 137, 218, 0.5);
+}

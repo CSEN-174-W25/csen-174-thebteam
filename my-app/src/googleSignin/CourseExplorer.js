@@ -202,6 +202,20 @@ const getDaysFromPattern = (pattern) => {
     // Check if we have multiple day codes separated by spaces
     if (parts.length > 1) {
         parts.forEach((part) => {
+            if (dayMap[part] !== undefined) {
+                // Check if the key exists instead of the value being truthy
+                dayIndices.push(dayMap[part]);
+            }
+        });
+
+        if (dayIndices.length > 0) {
+            return dayIndices;
+        }
+    }
+
+    // Check if we have multiple day codes separated by spaces
+    if (parts.length > 1) {
+        parts.forEach((part) => {
             if (dayMap[part]) {
                 dayIndices.push(dayMap[part]);
             }
@@ -413,11 +427,24 @@ function CourseExplorer() {
     const [viewMode, setViewMode] = useState("schedule"); // Default to schedule view
     const [courseSections, setCourseSections] = useState([]);
     const [filteredSections, setFilteredSections] = useState([]);
-    const [selectedSections, setSelectedSections] = useState([]);
     const [scheduleLoading, setScheduleLoading] = useState(true);
 
     const [conflictError, setConflictError] = useState(null);
     const [showConflict, setShowConflict] = useState(false);
+
+    const [schedules, setSchedules] = useState([
+        { id: "schedule-1", name: "Schedule 1", sections: [] },
+    ]);
+    const [activeScheduleId, setActiveScheduleId] = useState("schedule-1");
+    const [editingScheduleId, setEditingScheduleId] = useState(null);
+    const [newScheduleName, setNewScheduleName] = useState("");
+
+    // Get the active schedule
+    const activeSchedule =
+        schedules.find((schedule) => schedule.id === activeScheduleId) ||
+        schedules[0];
+
+    const selectedSections = activeSchedule.sections;
 
     // Remove prerequisites text from description
     const removePrerequisitesFromDescription = useCallback((description) => {
@@ -561,18 +588,6 @@ function CourseExplorer() {
             console.log("Excel Parse Results:", rawSections.length, "rows");
 
             if (rawSections.length > 0) {
-                // Look specifically for the columns we need
-                const requiredColumns = [
-                    "Course Section",
-                    "All Instructors",
-                    "Units",
-                    "Meeting Patterns",
-                    "Locations",
-                    "Course Tags",
-                    "Overlapping Courses",
-                ];
-
-                // Check if we have at least some of the required columns
                 const sampleRow = rawSections[0];
                 const foundColumns = Object.keys(sampleRow);
 
@@ -805,40 +820,116 @@ function CourseExplorer() {
     );
 
     // Toggle section selection with improved conflict detection
-    const toggleSectionSelection = useCallback((section) => {
-        // First clear any previous conflict messages
-        setShowConflict(false);
-        setConflictError(null);
+    const toggleSectionSelection = useCallback(
+        (section) => {
+            // First clear any previous conflict messages
+            setShowConflict(false);
+            setConflictError(null);
 
-        setSelectedSections((prev) => {
-            const isAlreadySelected = prev.some(
-                (s) => s["Course Section"] === section["Course Section"]
-            );
+            setSchedules((prevSchedules) => {
+                return prevSchedules.map((schedule) => {
+                    if (schedule.id !== activeScheduleId) return schedule;
 
-            if (isAlreadySelected) {
-                return prev.filter(
-                    (s) => s["Course Section"] !== section["Course Section"]
-                );
-            } else {
-                // Check for time conflicts before adding
-                const conflictingSection = getConflictingSection(section, prev);
+                    const isAlreadySelected = schedule.sections.some(
+                        (s) => s["Course Section"] === section["Course Section"]
+                    );
 
-                if (conflictingSection) {
-                    // Show conflict banner instead of alert
-                    setConflictError({
-                        section: section["Course Section"],
-                        conflictsWith: conflictingSection["Course Section"],
-                    });
-                    setShowConflict(true);
+                    if (isAlreadySelected) {
+                        return {
+                            ...schedule,
+                            sections: schedule.sections.filter(
+                                (s) =>
+                                    s["Course Section"] !==
+                                    section["Course Section"]
+                            ),
+                        };
+                    } else {
+                        // Check for time conflicts before adding
+                        const conflictingSection = getConflictingSection(
+                            section,
+                            schedule.sections
+                        );
 
-                    // Don't add the section with conflict
-                    return prev;
-                }
-                // No conflicts, add the section
-                return [...prev, section];
-            }
-        });
-    }, []);
+                        if (conflictingSection) {
+                            // Show conflict banner
+                            setConflictError({
+                                section: section["Course Section"],
+                                conflictsWith:
+                                    conflictingSection["Course Section"],
+                            });
+                            setShowConflict(true);
+
+                            // Don't add the section with conflict
+                            return schedule;
+                        }
+                        // No conflicts, add the section
+                        return {
+                            ...schedule,
+                            sections: [...schedule.sections, section],
+                        };
+                    }
+                });
+            });
+        },
+        [activeScheduleId]
+    );
+
+    // Add a new schedule
+    const addNewSchedule = () => {
+        const newId = `schedule-${schedules.length + 1}`;
+        const newSchedule = {
+            id: newId,
+            name: `Schedule ${schedules.length + 1}`,
+            sections: [],
+        };
+        setSchedules([...schedules, newSchedule]);
+        setActiveScheduleId(newId);
+    };
+
+    // Delete the active schedule
+    const deleteActiveSchedule = () => {
+        if (schedules.length <= 1) return; // Don't delete the last schedule
+
+        const newSchedules = schedules.filter(
+            (schedule) => schedule.id !== activeScheduleId
+        );
+        setSchedules(newSchedules);
+        setActiveScheduleId(newSchedules[0].id);
+    };
+
+    // Start editing schedule name
+    const startEditingName = (scheduleId, scheduleName) => {
+        setNewScheduleName(scheduleName);
+        setEditingScheduleId(scheduleId);
+    };
+
+    // Save the edited schedule name
+    const saveScheduleName = () => {
+        if (!newScheduleName.trim()) {
+            setEditingScheduleId(null);
+            return;
+        }
+
+        setSchedules((prevSchedules) =>
+            prevSchedules.map((schedule) =>
+                schedule.id === editingScheduleId
+                    ? { ...schedule, name: newScheduleName.trim() }
+                    : schedule
+            )
+        );
+        setEditingScheduleId(null);
+    };
+
+    // Handle tab click (activate or edit)
+    const handleTabClick = (scheduleId, scheduleName) => {
+        if (scheduleId === activeScheduleId) {
+            // If already active, start editing
+            startEditingName(scheduleId, scheduleName);
+        } else {
+            // If not active, just switch to this tab
+            setActiveScheduleId(scheduleId);
+        }
+    };
 
     // Enhanced conflict detection that returns the conflicting section
     const getConflictingSection = (newSection, existingSections) => {
@@ -1271,7 +1362,8 @@ function CourseExplorer() {
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.setAttribute("download", "SCU_Schedule.ics");
+        const fileName = `SCU_${activeSchedule.name.replace(/\s+/g, "_")}.ics`;
+        link.setAttribute("download", fileName);
 
         // Create a success message element
         const successMessage = document.createElement("div");
@@ -1311,7 +1403,7 @@ function CourseExplorer() {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-    }, [selectedSections, courseSections]);
+    }, [selectedSections, courseSections, activeSchedule.name]);
 
     // Helper function to convert a time string to a Date object
     const convertTimeToDateTime = (baseDate, timeStr) => {
@@ -1696,22 +1788,108 @@ function CourseExplorer() {
                                                     {selectedSections.length}{" "}
                                                     courses)
                                                 </h3>
-                                                {selectedSections.length >
-                                                    0 && (
+
+                                                <div className="discord-schedule-tabs">
+                                                    {schedules.map(
+                                                        (schedule) => (
+                                                            <div
+                                                                key={
+                                                                    schedule.id
+                                                                }
+                                                                className={`discord-schedule-tab ${
+                                                                    schedule.id ===
+                                                                    activeScheduleId
+                                                                        ? "active"
+                                                                        : ""
+                                                                }`}
+                                                            >
+                                                                {editingScheduleId ===
+                                                                schedule.id ? (
+                                                                    <input
+                                                                        type="text"
+                                                                        value={
+                                                                            newScheduleName
+                                                                        }
+                                                                        onChange={(
+                                                                            e
+                                                                        ) =>
+                                                                            setNewScheduleName(
+                                                                                e
+                                                                                    .target
+                                                                                    .value
+                                                                            )
+                                                                        }
+                                                                        onBlur={
+                                                                            saveScheduleName
+                                                                        }
+                                                                        onKeyDown={(
+                                                                            e
+                                                                        ) =>
+                                                                            e.key ===
+                                                                                "Enter" &&
+                                                                            saveScheduleName()
+                                                                        }
+                                                                        autoFocus
+                                                                        className="discord-schedule-name-edit"
+                                                                    />
+                                                                ) : (
+                                                                    <span
+                                                                        onClick={() =>
+                                                                            handleTabClick(
+                                                                                schedule.id,
+                                                                                schedule.name
+                                                                            )
+                                                                        }
+                                                                        className="discord-schedule-name"
+                                                                    >
+                                                                        {
+                                                                            schedule.name
+                                                                        }
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        )
+                                                    )}
                                                     <button
-                                                        className="discord-calendar-export-btn"
-                                                        onClick={
-                                                            exportToCalendar
-                                                        }
-                                                        title="Export to Calendar"
+                                                        className="discord-add-schedule-btn"
+                                                        onClick={addNewSchedule}
+                                                        title="Create new schedule"
                                                     >
-                                                        <span className="export-icon">
-                                                            📅
-                                                        </span>{" "}
-                                                        Export to Calendar
+                                                        +
                                                     </button>
-                                                )}
+                                                </div>
+
+                                                <div className="discord-schedule-actions">
+                                                    {schedules.length > 1 && (
+                                                        <button
+                                                            className="discord-delete-schedule-btn"
+                                                            onClick={
+                                                                deleteActiveSchedule
+                                                            }
+                                                            title="Delete schedule"
+                                                        >
+                                                            Delete
+                                                        </button>
+                                                    )}
+
+                                                    {selectedSections.length >
+                                                        0 && (
+                                                        <button
+                                                            className="discord-calendar-export-btn"
+                                                            onClick={
+                                                                exportToCalendar
+                                                            }
+                                                            title="Export to Calendar"
+                                                        >
+                                                            <span className="export-icon">
+                                                                📅
+                                                            </span>{" "}
+                                                            Export
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </div>
+
                                             <WeeklySchedule
                                                 selectedSections={
                                                     selectedSections
