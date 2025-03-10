@@ -194,6 +194,35 @@
   background-color: #18191c;
 }
 
+/* Make each message block align itself left or right */
+.message.bot {
+  align-self: flex-start; /* left */
+}
+
+.message.user {
+  align-self: flex-end; /* right */
+}
+
+/* Optionally give user messages a background color or bubble style */
+.message.user {
+  background-color: #5865f2;
+  border-radius: 8px;
+  padding: 8px;
+  color: #fff;
+}
+
+/* Remove the forced margin-left for user messages */
+.message.user .message-content {
+  margin-left: 0;
+}
+
+/* If you prefer the bot messages to remain as they were, 
+   just ensure .message.bot has no background or margin changes */
+.message.bot {
+  background-color: transparent;
+  color: #dcddde; /* Discord-like text color */
+}
+
 /* Mobile responsiveness */
 @media (max-width: 600px) {
   .chat-input-area {

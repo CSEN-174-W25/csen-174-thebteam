@@ -3,6 +3,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 import vertexai
 from vertexai.language_models import TextEmbeddingModel, TextEmbeddingInput
+import time
 
 def initialize_firebase():
     """
@@ -68,8 +69,7 @@ def process_csv_and_store(csv_path, db, embedding_model):
             
             # Build the text prompt for the embedding using all fields.
             text_input = (
-                f"{college} {department} {number} {course}. "
-                f"{description}. Tag: {tag}"
+                f"""{course}\n{description}. """
             )
             
             try:
@@ -113,13 +113,15 @@ def process_csv_and_store(csv_path, db, embedding_model):
             else:
                 docs.append(doc_id)
             
-            # If doc_id is empty (i.e., all fields were missing), let Firestore generate an ID.
+            # # If doc_id is empty (i.e., all fields were missing), let Firestore generate an ID.
             if not doc_id.strip("_"):
-                db.collection("course_embeddings_clean").add(data)
+                db.collection("course_embeddings").add(data)
                 print("Stored embedding with auto-generated document ID.")
             else:
-                db.collection("course_embeddings_clean").document(doc_id).set(data)
+                db.collection("course_embeddings").document(doc_id).set(data)
                 print(f"Stored embedding for course: {doc_id}")
+
+            time.sleep(1)
 
 def main():
     """

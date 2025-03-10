@@ -1,153 +1,177 @@
 import React, { useState, useRef, useEffect } from "react";
 import { getFunctions, httpsCallable } from "firebase/functions";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 import "./home.css";
 
 function Home() {
-    const [userInput, setUserInput] = useState("");
-    const [chatHistory, setChatHistory] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
-    const chatContainerRef = useRef(null);
-    const functions = getFunctions();
-    const ragFunction = httpsCallable(functions, "rag");
+  const [userInput, setUserInput] = useState("");
+  const [chatHistory, setChatHistory] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const chatContainerRef = useRef(null);
 
-    // Initial welcome message
-    useEffect(() => {
-        setChatHistory([
-            {
-                type: "bot",
-                message:
-                    "Hello! How can I help you with information about these courses? For example, are you interested in: * Finding out if a specific course has prerequisites? * Comparing courses from different departments? * Knowing which courses belong to a certain department? Just let me know what you'd like to know!",
-            },
-        ]);
-    }, []);
+  const functions = getFunctions();
+  const ragFunction = httpsCallable(functions, "rag");
 
-    // Scroll to bottom of chat when messages are added
-    useEffect(() => {
-        if (chatContainerRef.current) {
-            chatContainerRef.current.scrollTop =
-                chatContainerRef.current.scrollHeight;
+  // Default welcome message (type = "bot" so it appears on the left)
+  const defaultMessage = {
+    type: "bot",
+    message:
+      "Hello! How can I help you with information about these courses? For example, are you interested in: * Finding out if a specific course has prerequisites? * Comparing courses from different departments? * Knowing which courses belong to a certain department? Just let me know what you'd like to know!",
+  };
+
+  useEffect(() => {
+    async function loadChatHistory() {
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        console.error("User not authenticated.");
+        // Just show the default message if not authenticated
+        setChatHistory([defaultMessage]);
+        return;
+      }
+
+      const db = getFirestore();
+      const chatDocRef = doc(db, "chat_histories", currentUser.uid);
+
+      try {
+        const docSnap = await getDoc(chatDocRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data.messages && Array.isArray(data.messages)) {
+            // Convert Firestore role to "bot"/"user" for the UI
+            const loadedMessages = data.messages.map((m) => ({
+              type: m.role === "user" ? "user" : "bot",
+              message: m.message || "",
+            }));
+            // Put the default message first, then Firestore messages
+            setChatHistory([defaultMessage, ...loadedMessages]);
+          } else {
+            // If no messages field, just show the default
+            setChatHistory([defaultMessage]);
+          }
+        } else {
+          // If no document, just show the default
+          setChatHistory([defaultMessage]);
         }
-    }, [chatHistory]);
+      } catch (error) {
+        console.error("Error loading chat history:", error);
+        setChatHistory([defaultMessage]);
+      }
+    }
 
-    // Handle user input
-    const handleUserInput = (e) => {
-        setUserInput(e.target.value);
-    };
+    loadChatHistory();
+  }, []);
 
-    // Handle Enter key
-    const handleKeyPress = (event) => {
-        if (event.key === "Enter") {
-            event.preventDefault();
-            sendMessage();
-        }
-    };
+  // Scroll to bottom when chatHistory changes
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
+    }
+  }, [chatHistory]);
 
-    // Send user message to the "rag" Cloud Function
-    const sendMessage = async () => {
-        if (!userInput.trim()) return;
+  // Handle user input
+  const handleUserInput = (e) => {
+    setUserInput(e.target.value);
+  };
 
-        // Add user message to chat immediately
-        setChatHistory((prevHistory) => [
-            ...prevHistory,
-            { type: "user", message: userInput },
-        ]);
+  // Handle Enter key
+  const handleKeyPress = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      sendMessage();
+    }
+  };
 
-        const userMessage = userInput;
-        setUserInput("");
-        setIsLoading(true);
+  // Send user message
+  const sendMessage = async () => {
+    if (!userInput.trim()) return;
 
-        try {
-            console.log("Calling RAG function with query:", userMessage);
-            const result = await ragFunction({ query: userMessage });
-            const chatbotResponse = result.data.response;
+    setChatHistory((prev) => [...prev, { type: "user", message: userInput }]);
 
-            // Add bot response to chat
-            setChatHistory((prevHistory) => [
-                ...prevHistory,
-                { type: "bot", message: chatbotResponse },
-            ]);
-        } catch (error) {
-            console.error("Error calling RAG function:", error);
-            // Add error message to chat
-            setChatHistory((prevHistory) => [
-                ...prevHistory,
-                {
-                    type: "bot",
-                    message:
-                        "Sorry, I encountered an error processing your request.",
-                },
-            ]);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    const userMessage = userInput;
+    setUserInput("");
+    setIsLoading(true);
 
-    // Clear chat history
-    const clearChat = () => {
-        setChatHistory([
-            {
-                type: "bot",
-                message:
-                    "Hello! How can I help you with information about these courses? For example, are you interested in: * Finding out if a specific course has prerequisites? * Comparing courses from different departments? * Knowing which courses belong to a certain department? Just let me know what you'd like to know!",
-            },
-        ]);
-    };
+    try {
+      const result = await ragFunction({ query: userMessage });
+      const chatbotResponse = result.data.response;
 
-    return (
-        <div className="discord-chat">
-            {/* Chat header */}
-            <div className="chat-header">
-                <h1>Advisor</h1>
+      setChatHistory((prev) => [
+        ...prev,
+        { type: "bot", message: chatbotResponse },
+      ]);
+    } catch (error) {
+      console.error("Error calling RAG function:", error);
+      setChatHistory((prev) => [
+        ...prev,
+        {
+          type: "bot",
+          message: "Sorry, I encountered an error processing your request.",
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Clear chat (locally)
+  const clearChat = () => {
+    setChatHistory([defaultMessage]);
+  };
+
+  return (
+    <div className="discord-chat">
+      <div className="chat-header">
+        <h1>Advisor</h1>
+      </div>
+
+      <div className="chat-messages" ref={chatContainerRef}>
+        {chatHistory.map((msg, index) => (
+          <div key={index} className={`message ${msg.type}`}>
+            {msg.type === "bot" && <div className="bot-avatar">🤖</div>}
+            <div className="message-content">{msg.message}</div>
+          </div>
+        ))}
+
+        {isLoading && (
+          <div className="message bot">
+            <div className="bot-avatar">🤖</div>
+            <div className="message-content">
+              <span className="typing-indicator">
+                <span className="dot"></span>
+                <span className="dot"></span>
+                <span className="dot"></span>
+              </span>
             </div>
+          </div>
+        )}
+      </div>
 
-            {/* Chat messages area */}
-            <div className="chat-messages" ref={chatContainerRef}>
-                {chatHistory.map((msg, index) => (
-                    <div key={index} className={`message ${msg.type}`}>
-                        {msg.type === "bot" && (
-                            <div className="bot-avatar">🤖</div>
-                        )}
-                        <div className="message-content">{msg.message}</div>
-                    </div>
-                ))}
-                {isLoading && (
-                    <div className="message bot">
-                        <div className="bot-avatar">🤖</div>
-                        <div className="message-content">
-                            <span className="typing-indicator">
-                                <span className="dot"></span>
-                                <span className="dot"></span>
-                                <span className="dot"></span>
-                            </span>
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {/* Chat input area */}
-            <div className="chat-input-area">
-                <input
-                    type="text"
-                    className="chat-input"
-                    placeholder="Type your message..."
-                    value={userInput}
-                    onChange={handleUserInput}
-                    onKeyDown={handleKeyPress}
-                    disabled={isLoading}
-                />
-                <button
-                    className="send-button"
-                    onClick={sendMessage}
-                    disabled={isLoading || !userInput.trim()}
-                >
-                    Send
-                </button>
-                <button className="clear-button" onClick={clearChat}>
-                    Clear
-                </button>
-            </div>
-        </div>
-    );
+      <div className="chat-input-area">
+        <input
+          type="text"
+          className="chat-input"
+          placeholder="Type your message..."
+          value={userInput}
+          onChange={handleUserInput}
+          onKeyDown={handleKeyPress}
+          disabled={isLoading}
+        />
+        <button
+          className="send-button"
+          onClick={sendMessage}
+          disabled={isLoading || !userInput.trim()}
+        >
+          Send
+        </button>
+        <button className="clear-button" onClick={clearChat}>
+          Clear
+        </button>
+      </div>
+    </div>
+  );
 }
 
 export default Home;
