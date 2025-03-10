@@ -238,3 +238,80 @@
     flex: 1;
   }
 }
+/* Input area container */
+.chat-input-area {
+  position: relative;
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  background-color: #36393f;
+  margin: 0 16px 16px 16px;
+  /* Align items at the start so the buttons won't move when the textarea grows */
+  align-items: flex-start;
+}
+
+/* Wrap the textarea and add right padding so content doesn't run under buttons */
+.chat-input-wrapper {
+  flex: 1;
+  padding-right: 130px; /* Adjust to the width of your button container */
+}
+
+/* Textarea styling */
+.chat-input {
+  width: 100%;
+  min-height: 40px;
+  max-height: 200px; /* Maximum height before scrolling */
+  padding: 10px 16px;
+  background-color: #40444b;
+  border: none;
+  border-radius: 4px;
+  color: #dcddde;
+  font-size: 15px;
+  line-height: 1.4;
+  resize: none;
+  overflow-y: hidden;
+}
+
+/* Buttons container: absolutely positioned within the input area */
+.chat-input-buttons {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 80px;
+}
+
+/* Button fixed dimensions */
+.send-button,
+.clear-button {
+  width: 80px;
+  height: 40px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Button styles */
+.send-button {
+  background-color: #5865f2;
+  color: white;
+}
+.send-button:hover {
+  background-color: #4752c4;
+}
+.send-button:disabled {
+  background-color: #3c4086;
+  cursor: not-allowed;
+}
+.clear-button {
+  background-color: #4f545c;
+  color: white;
+}
+.clear-button:hover {
+  background-color: #43464d;
+}

@@ -9,6 +9,7 @@ function Home() {
   const [chatHistory, setChatHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const chatContainerRef = useRef(null);
+  const textareaRef = useRef(null);
 
   const functions = getFunctions();
   const ragFunction = httpsCallable(functions, "rag");
@@ -26,11 +27,9 @@ function Home() {
       const currentUser = auth.currentUser;
       if (!currentUser) {
         console.error("User not authenticated.");
-        // Just show the default message if not authenticated
         setChatHistory([defaultMessage]);
         return;
       }
-
       const db = getFirestore();
       const chatDocRef = doc(db, "chat_histories", currentUser.uid);
 
@@ -39,19 +38,15 @@ function Home() {
         if (docSnap.exists()) {
           const data = docSnap.data();
           if (data.messages && Array.isArray(data.messages)) {
-            // Convert Firestore role to "bot"/"user" for the UI
             const loadedMessages = data.messages.map((m) => ({
               type: m.role === "user" ? "user" : "bot",
               message: m.message || "",
             }));
-            // Put the default message first, then Firestore messages
             setChatHistory([defaultMessage, ...loadedMessages]);
           } else {
-            // If no messages field, just show the default
             setChatHistory([defaultMessage]);
           }
         } else {
-          // If no document, just show the default
           setChatHistory([defaultMessage]);
         }
       } catch (error) {
@@ -59,11 +54,9 @@ function Home() {
         setChatHistory([defaultMessage]);
       }
     }
-
     loadChatHistory();
   }, []);
 
-  // Scroll to bottom when chatHistory changes
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop =
@@ -71,33 +64,42 @@ function Home() {
     }
   }, [chatHistory]);
 
-  // Handle user input
   const handleUserInput = (e) => {
     setUserInput(e.target.value);
   };
 
-  // Handle Enter key
-  const handleKeyPress = (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      sendMessage();
+  // Auto-resize the textarea based on content with a max height (if desired)
+  const handleResize = (e) => {
+    const textArea = e.target;
+    const MAX_HEIGHT = 200; // optional max height in pixels
+    textArea.style.height = "auto";
+    if (textArea.scrollHeight > MAX_HEIGHT) {
+      textArea.style.height = `${MAX_HEIGHT}px`;
+      textArea.style.overflowY = "auto";
+    } else {
+      textArea.style.height = `${textArea.scrollHeight}px`;
+      textArea.style.overflowY = "hidden";
     }
   };
 
-  // Send user message
+  const handleKeyPress = (event) => {
+    // If Enter is pressed without Shift, send the message.
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      sendMessage();
+    }
+    // Shift+Enter will allow a newline (auto-resize will occur on input)
+  };
+
   const sendMessage = async () => {
     if (!userInput.trim()) return;
-
     setChatHistory((prev) => [...prev, { type: "user", message: userInput }]);
-
     const userMessage = userInput;
     setUserInput("");
     setIsLoading(true);
-
     try {
       const result = await ragFunction({ query: userMessage });
       const chatbotResponse = result.data.response;
-
       setChatHistory((prev) => [
         ...prev,
         { type: "bot", message: chatbotResponse },
@@ -106,20 +108,15 @@ function Home() {
       console.error("Error calling RAG function:", error);
       setChatHistory((prev) => [
         ...prev,
-        {
-          type: "bot",
-          message: "Sorry, I encountered an error processing your request.",
-        },
+        { type: "bot", message: "Sorry, I encountered an error processing your request." },
       ]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Clear chat (locally and in Firestore)
   const clearChat = () => {
     setChatHistory([defaultMessage]);
-    // Delete chat history from Firestore
     const auth = getAuth();
     const currentUser = auth.currentUser;
     if (!currentUser) {
@@ -150,7 +147,6 @@ function Home() {
             <div className="message-content">{msg.message}</div>
           </div>
         ))}
-
         {isLoading && (
           <div className="message bot">
             <div className="bot-avatar">🤖</div>
@@ -166,25 +162,33 @@ function Home() {
       </div>
 
       <div className="chat-input-area">
-        <input
-          type="text"
-          className="chat-input"
-          placeholder="Type your message..."
-          value={userInput}
-          onChange={handleUserInput}
-          onKeyDown={handleKeyPress}
-          disabled={isLoading}
-        />
-        <button
-          className="send-button"
-          onClick={sendMessage}
-          disabled={isLoading || !userInput.trim()}
-        >
-          Send
-        </button>
-        <button className="clear-button" onClick={clearChat}>
-          Clear
-        </button>
+        <div className="chat-input-wrapper">
+          <textarea
+            ref={textareaRef}
+            className="chat-input"
+            placeholder="Type your message..."
+            value={userInput}
+            onChange={(e) => {
+              handleUserInput(e);
+              handleResize(e);
+            }}
+            onKeyDown={handleKeyPress}
+            disabled={isLoading}
+            rows={1}
+          />
+        </div>
+        <div className="chat-input-buttons">
+          <button
+            className="send-button"
+            onClick={sendMessage}
+            disabled={isLoading || !userInput.trim()}
+          >
+            Send
+          </button>
+          <button className="clear-button" onClick={clearChat}>
+            Clear
+          </button>
+        </div>
       </div>
     </div>
   );
