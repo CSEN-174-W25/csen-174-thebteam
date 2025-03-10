@@ -1,6 +1,6 @@
-
 import { initializeApp } from "firebase/app";
-import {getAuth,GoogleAuthProvider} from "firebase/auth";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getFirestore, addDoc, collection, doc, setDoc, getDoc } from "firebase/firestore"; // ✅ Import Firestore functions
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -11,7 +11,10 @@ const firebaseConfig = {
   appId: process.env.REACT_APP_APP_ID
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app)
+const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
-export {auth,provider};
+const db = getFirestore(app); 
+
+export { auth, provider, db, doc, setDoc, getDoc, addDoc, collection }; 
