@@ -17,8 +17,8 @@ body {
     justify-content: center;
     align-items: center;
     width: 100%;
-    height: 90vh;
     margin-top: 20px;
+    margin-bottom: 30px;
 }
 
 /* Wider Table Layout */
@@ -32,6 +32,7 @@ body {
     table-layout: fixed; /* Ensures uniform column sizes */
     border-radius: 10px;
     overflow: hidden;
+    margin: 0 auto; /* Center the table */
 }
 
 /* Header styling */
@@ -52,23 +53,44 @@ body {
     position: relative;
     vertical-align: top;
     height: 75px;  /* Increased height slightly for more space */
+    transition: background-color 0.3s ease-in-out;
 }
 
-/* Keep spacing between button and text */
-.selected-course {
+/* Important: Override the !important rule but keep the transition */
+.course-table td[style*="background-color"] {
+    background-color: inherit;
+}
+
+/* Course cell container */
+.course-cell {
+    position: relative;
     display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 10px; /* Spacing between text and button */
+    flex-direction: column;
+    min-height: 100%;
 }
 
-/* Keep smaller + button */
+/* Keep spacing between content */
+.selected-course {
+    word-break: break-word;
+    margin-bottom: 10px;
+}
+
+/* Action buttons container */
+.course-actions {
+    display: flex;
+    gap: 8px;
+    position: absolute;
+    bottom: -15px;
+    left: -15px;
+}
+
+/* Add/Edit button styling */
 .add-button, .edit-button {
     background-color: #4A4D5E;
     color: white;
     border: 1px solid white;
     border-radius: 5px;
-    width: 22px; /* Smaller button */
+    width: 22px;
     height: 22px;
     font-size: 12px;
     font-weight: bold;
@@ -77,16 +99,36 @@ body {
     justify-content: center;
     align-items: center;
     transition: background-color 0.2s ease-in-out;
+}
 
-    /* Keep button at bottom-left */
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
+/* Color button styling */
+.color-button {
+    background-color: #4A4D5E;
+    color: white;
+    border: 1px solid white;
+    border-radius: 5px;
+    width: 22px;
+    height: 22px;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.2s ease-in-out;
+    padding: 0;
 }
 
 /* Button hover effect */
-.add-button:hover, .edit-button:hover {
+.add-button:hover, .edit-button:hover, .color-button:hover {
     background-color: #5A5D6E;
+}
+
+/* Empty cell styling */
+.empty-cell {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    min-height: 100%;
 }
 
 /* Search input */
@@ -135,7 +177,6 @@ body {
     background-color: #3A3D4D;
 }
 
-
 /* Year Label Styling */
 .year-container {
     text-align: center;
@@ -159,6 +200,7 @@ body {
     font-weight: bold;
     margin-bottom: 10px;
 }
+
 /* Style for Year Label Row */
 .year-row .year-header {
     background-color: #7289da; /* Same color as Year Label */
@@ -179,7 +221,6 @@ body {
     padding: 12px;
 }
 
-
 /* Page Header Styling - Smaller & No Subtitle */
 .page-header {
     background-color: #2A2D37; /* Match background */
@@ -192,6 +233,37 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    margin-bottom: 20px;
 }
 
+/* Color wheel (updated styling) */
+.color-wheel {
+    position: absolute;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    background-color: #2A2D37;
+    border: 1px solid #4A4D5E;
+    padding: 8px;
+    z-index: 20;
+    width: 130px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    border-radius: 5px;
+    bottom: -10px;
+    left: 30px;
+}
 
+/* Color options */
+.color-option {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid #4A4D5E;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+}
+
+.color-option:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
