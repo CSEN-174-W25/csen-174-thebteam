@@ -81,7 +81,7 @@ function Navbar() {
                         isActive ? "nav-item active" : "nav-item"
                     }
                 >
-                    Course Explorer
+                    Scheduler
                 </NavLink>
             </div>
 

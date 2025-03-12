@@ -1489,7 +1489,7 @@ function CourseExplorer() {
                 </div>
             )}
             <div className="discord-explorer-header">
-                <h1>Course Explorer</h1>
+                <h1>Scheduler</h1>
                 <p>Discover and analyze course offerings</p>
                 <ModeToggle activeMode={viewMode} onChange={setViewMode} />
             </div>
