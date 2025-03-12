@@ -4,6 +4,10 @@ import { getFirestore, doc, getDoc, deleteDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import "./home.css";
 
+function parseBold(text) {
+  return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+}
+
 function Home() {
   const [userInput, setUserInput] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
@@ -96,6 +100,9 @@ function Home() {
     setChatHistory((prev) => [...prev, { type: "user", message: userInput }]);
     const userMessage = userInput;
     setUserInput("");
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+    }
     setIsLoading(true);
     try {
       const result = await ragFunction({ query: userMessage });
@@ -143,13 +150,20 @@ function Home() {
       <div className="chat-messages" ref={chatContainerRef}>
         {chatHistory.map((msg, index) => (
           <div key={index} className={`message ${msg.type}`}>
-            {msg.type === "bot" && <div className="bot-avatar">🤖</div>}
-            <div className="message-content">{msg.message}</div>
+            {msg.type === "bot" && <div className="bot-avatar">🎓</div>}
+            {msg.type === "bot" ? (
+              <div
+                className="message-content"
+                dangerouslySetInnerHTML={{ __html: parseBold(msg.message) }}
+              ></div>
+            ) : (
+              <div className="message-content">{msg.message}</div>
+            )}
           </div>
         ))}
         {isLoading && (
           <div className="message bot">
-            <div className="bot-avatar">🤖</div>
+            <div className="bot-avatar">🎓</div>
             <div className="message-content">
               <span className="typing-indicator">
                 <span className="dot"></span>
