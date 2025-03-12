@@ -6,7 +6,7 @@
   width: 100%;
   background-color: #36393f;
   color: #dcddde;
-  font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: 'Arial', sans-serif;
 }
 
 /* Chat header */
@@ -132,6 +132,7 @@
   border-radius: 4px;
   color: #dcddde;
   font-size: 15px;
+  font-family: 'Arial', sans-serif;
 }
 
 .chat-input:focus {

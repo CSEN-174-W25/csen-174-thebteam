@@ -21,6 +21,21 @@ const COLOR_OPTIONS = [
     "#36393F", // Discord Dark (reset option)
 ];
 
+// Tooltip component to display course information
+const CourseInfoTooltip = ({ course, position }) => {
+    return (
+        <div 
+            className="course-info-tooltip" 
+            style={{ position: "absolute", top: position.y, left: position.x/1.7, width: "400px" }}
+        >
+            <strong>{course.tag} {course.number}</strong>
+            <p>{course.course}</p>
+            {course.description && <p className="course-description">{course.description}</p>}
+            {course.pre_reqs && <p className="course-prereqs"> {course.pre_reqs}</p>}
+        </div>
+    );
+};
+
 const FourYearPlan = () => {
     const [courses, setCourses] = useState([]);
     const [searchResults, setSearchResults] = useState(
@@ -43,6 +58,10 @@ const FourYearPlan = () => {
     );
     const [user, setUser] = useState(null);
 
+    // State for tooltip
+    const [hoveredCourse, setHoveredCourse] = useState(null);
+    const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+
     useEffect(() => {
         fetch("/courses.csv")
             .then((response) => response.text())
@@ -55,9 +74,11 @@ const FourYearPlan = () => {
                             tag: row["tag"] || "",
                             number: row["number"] || "",
                             course: row["course"] || "",
+                            description: row["description"] || "", // New field for description
+                            pre_reqs: row["pre_reqs"] || "",
                             display: `${row["tag"]} ${row["number"]} - ${row["course"]}`
                         })).filter(course => course.tag && course.number && course.course);
-
+                        
                         setCourses(formattedCourses);
                     }
                 });
@@ -252,7 +273,7 @@ const FourYearPlan = () => {
     );
 
     return (
-        <div>
+        <div style={{ position: "relative" }}>
             {/* Header at the Top */}
             <header className="page-header">
                 <h1>4-Year Plan</h1>
@@ -304,7 +325,19 @@ const FourYearPlan = () => {
                                             ) : (
                                                 <>
                                                     {value ? (
-                                                        <div className="course-cell">
+                                                        <div 
+                                                            className="course-cell"
+                                                            // When hovering, look up the full course details from the courses array
+                                                            onMouseEnter={(e) => {
+                                                                const courseData = courses.find(c => c.display === value);
+                                                                if (courseData) {
+                                                                    setHoveredCourse(courseData);
+                                                                    const rect = e.currentTarget.getBoundingClientRect();
+                                                                    setTooltipPosition({ x: rect.right + 10, y: rect.top });
+                                                                }
+                                                            }}
+                                                            onMouseLeave={() => setHoveredCourse(null)}
+                                                        >
                                                             <div className="selected-course">{value}</div>
                                                             <div className="course-actions">
                                                                 <button 
@@ -355,6 +388,11 @@ const FourYearPlan = () => {
                     </table>
                 </div>
             ))}
+
+            {/* Conditionally render the tooltip if a course is hovered */}
+            {hoveredCourse && (
+                <CourseInfoTooltip course={hoveredCourse} position={tooltipPosition} />
+            )}
         </div>
     );
 };
