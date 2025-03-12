@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Papa from "papaparse";
 import Fuse from "fuse.js";
 import { auth, db, doc, setDoc, getDoc } from "./config"; // Firebase imports
@@ -57,6 +57,7 @@ const FourYearPlan = () => {
         Array.from({ length: NUM_TABLES * 6 }, () => Array(3).fill(""))
     );
     const [user, setUser] = useState(null);
+    const tooltipTimeoutRef = useRef(null);
 
     // State for tooltip
     const [hoveredCourse, setHoveredCourse] = useState(null);
@@ -274,11 +275,7 @@ const FourYearPlan = () => {
 
     return (
         <div style={{ position: "relative" }}>
-            {/* Header at the Top */}
-            <header className="page-header">
-                <h1>4-Year Plan</h1>
-            </header>
-    
+            {/* Header and table code remains unchanged */}
             {[...Array(NUM_TABLES)].map((_, tableIndex) => (
                 <div key={tableIndex} className="table-container">
                     <table className="course-table">
@@ -327,16 +324,22 @@ const FourYearPlan = () => {
                                                     {value ? (
                                                         <div 
                                                             className="course-cell"
-                                                            // When hovering, look up the full course details from the courses array
                                                             onMouseEnter={(e) => {
-                                                                const courseData = courses.find(c => c.display === value);
-                                                                if (courseData) {
-                                                                    setHoveredCourse(courseData);
-                                                                    const rect = e.currentTarget.getBoundingClientRect();
-                                                                    setTooltipPosition({ x: rect.right + 10, y: rect.top });
-                                                                }
+                                                                const target = e.currentTarget;
+                                                                tooltipTimeoutRef.current = setTimeout(() => {
+                                                                    const courseData = courses.find(c => c.display === value);
+                                                                    if (courseData && target) {
+                                                                        setHoveredCourse(courseData);
+                                                                        const rect = target.getBoundingClientRect();
+                                                                        setTooltipPosition({ x: rect.right + 10, y: rect.top });
+                                                                    }
+                                                                }, 1000); // 500ms delay
                                                             }}
-                                                            onMouseLeave={() => setHoveredCourse(null)}
+                                                            onMouseLeave={() => {
+                                                                // Clear the timer and hide the tooltip if it's visible
+                                                                clearTimeout(tooltipTimeoutRef.current);
+                                                                setHoveredCourse(null);
+                                                            }}
                                                         >
                                                             <div className="selected-course">{value}</div>
                                                             <div className="course-actions">
@@ -389,7 +392,7 @@ const FourYearPlan = () => {
                 </div>
             ))}
 
-            {/* Conditionally render the tooltip if a course is hovered */}
+            {/* Render the tooltip if a course is hovered */}
             {hoveredCourse && (
                 <CourseInfoTooltip course={hoveredCourse} position={tooltipPosition} />
             )}
