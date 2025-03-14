@@ -21,7 +21,7 @@ const COLOR_OPTIONS = [
     "#36393F", // Discord Dark (reset option)
 ];
 
-// Tooltip component to display course information
+// Tooltip component to display course information on hover
 const CourseInfoTooltip = ({ course, position }) => {
     return (
         <div 
@@ -63,6 +63,7 @@ const FourYearPlan = () => {
     const [hoveredCourse, setHoveredCourse] = useState(null);
     const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
 
+    // Fetch course information from CSV file
     useEffect(() => {
         fetch("/courses.csv")
             .then((response) => response.text())
@@ -106,6 +107,7 @@ const FourYearPlan = () => {
         return () => unsubscribe();
     }, []);
 
+    // fetch saved courses from Firestore
     const fetchUserCourses = async (userId) => {
         try {
             const userDoc = await getDoc(doc(db, "course_plans", userId));
@@ -333,7 +335,7 @@ const FourYearPlan = () => {
                                                                         const rect = target.getBoundingClientRect();
                                                                         setTooltipPosition({ x: rect.right + 10, y: rect.top });
                                                                     }
-                                                                }, 1000); // 500ms delay
+                                                                }, 1000); // 1 second delay on hover
                                                             }}
                                                             onMouseLeave={() => {
                                                                 // Clear the timer and hide the tooltip if it's visible

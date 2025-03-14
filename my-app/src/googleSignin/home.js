@@ -25,6 +25,7 @@ function Home() {
       "Hello! How can I help you with information about these courses? For example, are you interested in: * Finding out if a specific course has prerequisites? * Comparing courses from different departments? * Knowing which courses belong to a certain department? Just let me know what you'd like to know!",
   };
 
+  // Load chat history from Firestore on component mount
   useEffect(() => {
     async function loadChatHistory() {
       const auth = getAuth();
@@ -75,7 +76,7 @@ function Home() {
   // Auto-resize the textarea based on content with a max height (if desired)
   const handleResize = (e) => {
     const textArea = e.target;
-    const MAX_HEIGHT = 200; // optional max height in pixels
+    const MAX_HEIGHT = 200; // max height in pixels
     textArea.style.height = "auto";
     if (textArea.scrollHeight > MAX_HEIGHT) {
       textArea.style.height = `${MAX_HEIGHT}px`;

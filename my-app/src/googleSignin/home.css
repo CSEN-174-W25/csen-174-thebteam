@@ -316,10 +316,3 @@
 .clear-button:hover {
   background-color: #43464d;
 }
-
-.course-description,
-.course-prereqs {
-  font-size: 14px;
-  line-height: 1.4;
-  /* Add any other shared properties here */
-}

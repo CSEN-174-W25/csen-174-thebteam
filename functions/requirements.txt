@@ -1,5 +1,9 @@
-firebase-functions
 firebase-admin
-vertexai
+firebase-functions
+langchain-astradb
+langchain-openai
+langchain-core
+openai
 numpy
-google-genai
+vertexai
+google-cloud-aiplatform
